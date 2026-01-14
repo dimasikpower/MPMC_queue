@@ -1,0 +1,18 @@
+# first bench
+dimon@WIN-HBP9UMOFUGR:~/projects/hft/MPMC_queue$ ./bench_test 
+=== BENCHMARK RESULTS ===
+Threads: 2P + 2C
+Total ops: 4000000
+Duration: 324.68 ms
+Throughput: 12319816 ops/sec
+Avg latency: 81.17 ns/op
+
+
+# latest bench
+dimon@WIN-HBP9UMOFUGR:~/projects/hft/MPMC_queue$ taskset -c 2,3 ./bench_v2
+=== NON-BLOCKING BENCHMARK ===
+Total items: 1000000
+Throughput: 47144105 ops/sec
+Latency (p50): 15.625 ns
+Latency (p99): 34.375 ns
+Max latency: 1.60415e+06 ns

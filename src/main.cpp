@@ -13,7 +13,7 @@ int main() {
     const size_t QUEUE_SIZE = 4;
     SimpleMPMCQueue<int> queue(QUEUE_SIZE);
 
-    const int NUM_ITEMS = 1000;
+    const int NUM_ITEMS = 10000;
     std::vector<std::thread> threads;
 
     // 2 продюсера
