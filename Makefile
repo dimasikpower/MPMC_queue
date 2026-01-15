@@ -12,3 +12,6 @@ bench:
 
 bench_v2:
 	g++ -O3 -march=native -DNDEBUG -pthread src/benchmark.cpp -o bench_v2
+
+perf_bench_v2:
+	perf stat -e cache-misses,context-switches,cycles ./bench_v2

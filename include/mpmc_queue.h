@@ -7,24 +7,28 @@
 template<typename T>
 class SimpleMPMCQueue {
 private:
-    struct Slot {
+    struct alignas(64) Slot {
         T data;
         std::atomic<size_t> turn{0}; // чётное = можно писать, нечётное = можно читать
     };
 
     size_t capacity_;
     std::vector<Slot> buffer_;
-    alignas(64) std::atomic<size_t> head_{0}; // ticket для записи
-    char pad0[64];
-    alignas(64) std::atomic<size_t> tail_{0}; // ticket для чтения
-    char pad1[64];
+    struct {
+        alignas(64) std::atomic<size_t> value{0};
+    } head_; // ticket для записи
+
+    struct {
+        alignas(64) std::atomic<size_t> value{0};
+    } tail_; // ticket для чтения
+
 
 public:
     explicit SimpleMPMCQueue(size_t capacity) 
         : capacity_(capacity), buffer_(capacity) {}
 
     void push(T value) {
-        size_t ticket = head_.fetch_add(1, std::memory_order_relaxed);
+        size_t ticket = head_.value.fetch_add(1, std::memory_order_relaxed);
         size_t slot_idx = ticket % capacity_;
         size_t expected_turn = 2 * (ticket / capacity_);
 
@@ -39,7 +43,7 @@ public:
     }
 
     bool try_push(T value) {
-        size_t current_head = head_.load(std::memory_order_acquire);
+        size_t current_head = head_.value.load(std::memory_order_acquire);
         size_t slot_idx = current_head % capacity_;
         size_t expected_turn = 2 * (current_head / capacity_);
 
@@ -47,7 +51,7 @@ public:
             return false; // очередь полна
         }
 
-        if (!head_.compare_exchange_strong(
+        if (!head_.value.compare_exchange_strong(
                 current_head,
                 current_head + 1,
                 std::memory_order_release,
@@ -61,7 +65,7 @@ public:
     }
 
     bool try_pop(T& out) {
-        size_t current_tail = tail_.load(std::memory_order_acquire); // ← acquire здесь важно!
+        size_t current_tail = tail_.value.load(std::memory_order_acquire); // ← acquire здесь важно!
         size_t slot_idx = current_tail % capacity_;
         size_t expected_turn = 2 * (current_tail / capacity_) + 1;
 
@@ -71,7 +75,7 @@ public:
         }
 
         // Пробуем захватить этот ticket
-        if (tail_.compare_exchange_strong(
+        if (tail_.value.compare_exchange_strong(
                 current_tail, 
                 current_tail + 1,
                 std::memory_order_release,   // ← успех: release, потому что двигаем tail

@@ -16,3 +16,24 @@ Throughput: 47144105 ops/sec
 Latency (p50): 15.625 ns
 Latency (p99): 34.375 ns
 Max latency: 1.60415e+06 ns
+
+
+[2026-01-15]
+dimon@WIN-HBP9UMOFUGR:~/projects/hft/MPMC_queue$ perf stat -e cache-misses,context-switches,cycles ./bench_v2
+=== NON-BLOCKING BENCHMARK ===
+Total items: 1000000
+Throughput: 83449335 ops/sec
+Latency (p50): 13.75 ns
+Latency (p99): 48.125 ns
+Max latency: 2.20185e+06 ns
+
+ Performance counter stats for './bench_v2':
+
+           1176180      cache-misses                                                          
+               143      context-switches                                                      
+         785293896      cycles                                                                
+
+       0.072581953 seconds time elapsed
+
+       0.184755000 seconds user
+       0.010264000 seconds sys
